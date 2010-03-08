@@ -1699,6 +1699,7 @@ static void
 KdQueueEvent (DeviceIntPtr pDev, InternalEvent *ev)
 {
     KdAssertSigioBlocked ("KdQueueEvent");
+    fprintf( stderr, "Enq'd event!\n" );
     mieqEnqueue (pDev, ev);
 }
 
@@ -1710,6 +1711,7 @@ KdRunMouseMachine (KdPointerInfo *pi, KdInputClass c, int type, int x, int y,
     const KdInputTransition *t;
     int	a;
 
+    fprintf( stderr, "Running mouse machine!\n" );
     c = KdClassifyInput(pi, type, x, y, z, b);
     t = &kdInputMachine[pi->mouseState][c];
     for (a = 0; a < MAX_ACTIONS; a++)
@@ -1976,13 +1978,16 @@ _KdEnqueuePointerEvent (KdPointerInfo *pi, int type, int x, int y, int z,
     int nEvents = 0, i = 0;
     int valuators[3] = { x, y, z };
 
+    fprintf( stderr, "Entered _KdEnqueuePointer\n" );
     /* TRUE from KdHandlePointerEvent, means 'we swallowed the event'. */
     if (!force && KdHandlePointerEvent(pi, type, x, y, z, b, absrel))
         return;
 
+    fprintf( stderr, "Getting event list...." );
     GetEventList(&kdEvents);
     nEvents = GetPointerEvents(kdEvents, pi->dixdev, type, b, absrel,
                                0, 3, valuators);
+    fprintf( stderr, "nEvents: %d\n", nEvents );
     for (i = 0; i < nEvents; i++)
         KdQueueEvent(pi->dixdev, (InternalEvent *)((kdEvents + i)->event));
 }
